@@ -11,19 +11,12 @@ type Error struct {
 	Error string
 }
 
-var jsonContentType = []string{"application/json; charset=utf-8"}
-
-func writeContentType(w http.ResponseWriter, value []string) {
-	header := w.Header()
-	if val := header["Content-Type"]; len(val) == 0 {
-		header["Content-Type"] = value
-	}
-}
+var jsonContentType = "application/json; charset=utf-8"
 
 func ReplySuccess(w http.ResponseWriter, status int, payload interface{}) {
-	w.WriteHeader(status)
+	w.Header().Set("Content-Type", jsonContentType)
 
-	writeContentType(w, jsonContentType)
+	w.WriteHeader(status)
 
 	if err := json.NewEncoder(w).Encode(payload); err != nil {
 		log.Error().Err(err).Msg("json.Encode")
@@ -33,9 +26,9 @@ func ReplySuccess(w http.ResponseWriter, status int, payload interface{}) {
 func ReplyError(w http.ResponseWriter, status int, err error) {
 	log.Error().Err(err).Send()
 
-	w.WriteHeader(status)
+	w.Header().Set("Content-Type", jsonContentType)
 
-	writeContentType(w, jsonContentType)
+	w.WriteHeader(status)
 
 	if err := json.NewEncoder(w).Encode(Error{
 		Error: err.Error(),
